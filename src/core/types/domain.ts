@@ -64,3 +64,23 @@ export interface Payee {
   name: string;
   transfer_acct?: string;
 }
+
+export interface ScheduleCondition {
+  op: string;
+  field: string;
+  value: unknown;
+}
+
+export interface Schedule {
+  id: string;
+  name: string;
+  rule: string;
+  next_date: string;
+  completed: boolean;
+  conditions?: ScheduleCondition[];
+}
+
+export interface Note {
+  id: string;
+  note: string | null;
+}

@@ -31,6 +31,13 @@ import * as deleteTransaction from './delete-transaction/index.js';
 import * as updateTransaction from './update-transaction/index.js';
 import * as createTransaction from './create-transaction/index.js';
 import * as runBankSync from './run-bank-sync/index.js';
+import * as getSchedules from './schedules/get-schedules/index.js';
+import * as createSchedule from './schedules/create-schedule/index.js';
+import * as updateSchedule from './schedules/update-schedule/index.js';
+import * as deleteSchedule from './schedules/delete-schedule/index.js';
+import * as getNotes from './notes/get-notes/index.js';
+import * as setNote from './notes/set-note/index.js';
+import * as getBudgetMonth from './get-budget-month/index.js';
 
 const readTools = [
   getTransactions,
@@ -41,6 +48,9 @@ const readTools = [
   getGroupedCategories,
   getPayees,
   getRules,
+  getSchedules,
+  getNotes,
+  getBudgetMonth,
 ];
 
 const writeTools = [
@@ -60,6 +70,10 @@ const writeTools = [
   deleteTransaction,
   createTransaction,
   runBankSync,
+  createSchedule,
+  updateSchedule,
+  deleteSchedule,
+  setNote,
 ];
 
 export const setupTools = (server: Server, enableWrite: boolean): void => {

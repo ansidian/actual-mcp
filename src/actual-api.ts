@@ -40,9 +40,9 @@ export async function initActualApi(): Promise<void> {
     }
     await api.init({
       dataDir,
-      serverURL: process.env.ACTUAL_SERVER_URL,
-      password: process.env.ACTUAL_PASSWORD,
-    });
+      serverURL: process.env.ACTUAL_SERVER_URL!,
+      password: process.env.ACTUAL_PASSWORD!,
+    } as any);
 
     const budgets: BudgetFile[] = await api.getBudgets();
     if (!budgets || budgets.length === 0) {
@@ -98,7 +98,7 @@ export async function getAccounts(): Promise<APIAccountEntity[]> {
  */
 export async function getCategories(): Promise<APICategoryEntity[]> {
   await initActualApi();
-  return api.getCategories();
+  return api.getCategories() as Promise<APICategoryEntity[]>;
 }
 
 /**
@@ -142,7 +142,7 @@ export async function getRules(): Promise<RuleEntity[]> {
  */
 export async function createPayee(args: Record<string, unknown>): Promise<string> {
   await initActualApi();
-  return api.createPayee(args);
+  return api.createPayee(args as any);
 }
 
 /**
@@ -166,7 +166,7 @@ export async function deletePayee(id: string): Promise<unknown> {
  */
 export async function createRule(args: Record<string, unknown>): Promise<RuleEntity> {
   await initActualApi();
-  return api.createRule(args);
+  return api.createRule(args as any);
 }
 
 /**
@@ -174,7 +174,7 @@ export async function createRule(args: Record<string, unknown>): Promise<RuleEnt
  */
 export async function updateRule(args: Record<string, unknown>): Promise<RuleEntity> {
   await initActualApi();
-  return api.updateRule(args);
+  return api.updateRule(args as any);
 }
 
 /**
@@ -190,7 +190,7 @@ export async function deleteRule(id: string): Promise<boolean> {
  */
 export async function createCategory(args: Record<string, unknown>): Promise<string> {
   await initActualApi();
-  return api.createCategory(args);
+  return api.createCategory(args as any);
 }
 
 /**
@@ -214,7 +214,7 @@ export async function deleteCategory(id: string): Promise<{ error?: string }> {
  */
 export async function createCategoryGroup(args: Record<string, unknown>): Promise<string> {
   await initActualApi();
-  return api.createCategoryGroup(args);
+  return api.createCategoryGroup(args as any);
 }
 
 /**
@@ -246,7 +246,7 @@ export async function createTransaction(accountId: string, data: TransactionData
  */
 export async function updateTransaction(id: string, data: UpdateTransactionData): Promise<unknown> {
   await initActualApi();
-  return api.updateTransaction(id, data);
+  return api.updateTransaction(id, data as any);
 }
 
 /**
@@ -256,6 +256,108 @@ export async function deleteTransaction(id: string): Promise<unknown> {
   await initActualApi();
   return api.deleteTransaction(id);
 }
+
+// ----------------------------
+// SCHEDULES
+// ----------------------------
+
+/**
+ * Get all schedules from the schedules table
+ */
+export async function getSchedules(): Promise<unknown[]> {
+  await initActualApi();
+  const result = await api.runQuery(api.q('schedules').select(['id', 'name', 'rule', 'next_date', 'completed']));
+  return (result as { data: unknown[] }).data;
+}
+
+/**
+ * Get a rule's conditions by rule ID.
+ * Schedule conditions are stored as rule conditions.
+ */
+export async function getRuleById(ruleId: string): Promise<RuleEntity | undefined> {
+  await initActualApi();
+  const rules = await api.getRules();
+  return rules.find((r: RuleEntity) => r.id === ruleId);
+}
+
+/**
+ * Create a new schedule. Uses api.createSchedule() for the initial record,
+ * then api.internal.send('schedule/update') to fix amount and recurrence
+ * since createSchedule alone doesn't reliably set these fields.
+ */
+export async function createScheduleWithConditions(
+  name: string,
+  date: string,
+  amount: number,
+  conditions: Array<{ op: string; field: string; value: unknown }>
+): Promise<string> {
+  await initActualApi();
+  const id: string = await api.createSchedule({ name, date, amount } as any);
+  await api.internal.send('schedule/update', { schedule: { id }, conditions });
+  return id;
+}
+
+/**
+ * Update a schedule's conditions (amount, date/recurrence).
+ * api.updateSchedule() throws "Unknown operator: id", so we must
+ * use internal.send instead.
+ */
+export async function updateScheduleConditions(
+  id: string,
+  conditions: Array<{ op: string; field: string; value: unknown }>
+): Promise<void> {
+  await initActualApi();
+  await api.internal.send('schedule/update', { schedule: { id }, conditions });
+}
+
+/**
+ * Delete a schedule by ID.
+ */
+export async function deleteSchedule(id: string): Promise<void> {
+  await initActualApi();
+  await api.internal.send('schedule/delete', { id });
+}
+
+// ----------------------------
+// NOTES
+// ----------------------------
+
+/**
+ * Get notes for all entities or a specific entity.
+ */
+export async function getNotes(entityId?: string): Promise<Array<{ id: string; note: string }>> {
+  await initActualApi();
+  let query = api.q('notes').select(['id', 'note']);
+  if (entityId) {
+    query = query.filter({ id: entityId });
+  }
+  const result = await api.runQuery(query);
+  return (result as { data: Array<{ id: string; note: string }> }).data;
+}
+
+/**
+ * Set a note for an entity (category, account, etc).
+ */
+export async function setNote(id: string, note: string): Promise<void> {
+  await initActualApi();
+  await api.internal.send('notes-save', { id, note });
+}
+
+// ----------------------------
+// BUDGET MONTH
+// ----------------------------
+
+/**
+ * Get budget month data including category breakdowns.
+ */
+export async function getBudgetMonth(month: string): Promise<unknown> {
+  await initActualApi();
+  return api.getBudgetMonth(month);
+}
+
+// ----------------------------
+// BANK SYNC
+// ----------------------------
 
 /**
  * Run bank sync for accounts (ensures API is initialized)
