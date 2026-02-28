@@ -41,6 +41,7 @@ import * as getBudgetMonth from './get-budget-month/index.js';
 import * as setBudgetAmount from './budget/set-budget-amount/index.js';
 import * as holdForNextMonth from './budget/hold-for-next-month/index.js';
 import * as getGuide from './guides/get-guide/index.js';
+import * as queryKnowledge from './knowledge/query-knowledge/index.js';
 
 const readTools = [
   getTransactions,
@@ -54,6 +55,7 @@ const readTools = [
   getSchedules,
   getNotes,
   getBudgetMonth,
+  queryKnowledge,
   getGuide,
 ];
 
@@ -99,13 +101,19 @@ export const setupTools = (server: Server, enableWrite: boolean): void => {
    * Handler for calling tools
    */
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    try {
-      await initActualApi();
-      const { name, arguments: args } = request.params;
+    const { name, arguments: args } = request.params;
+    const tool = allTools.find((t) => t.schema.name === name);
 
-      const tool = allTools.find((t) => t.schema.name === name);
-      if (!tool) {
-        return error(`Unknown tool ${name}`);
+    if (!tool) {
+      return error(`Unknown tool ${name}`);
+    }
+
+    // Skip Actual API init/shutdown for tools that don't need it (e.g., query-knowledge)
+    const needsApi = !('requiresApi' in tool.schema && tool.schema.requiresApi === false);
+
+    try {
+      if (needsApi) {
+        await initActualApi();
       }
 
       // @ts-expect-error: Argument type is handled by Zod schema validation
@@ -117,10 +125,12 @@ export const setupTools = (server: Server, enableWrite: boolean): void => {
           : typeof err === 'object' && err !== null
             ? JSON.stringify(err)
             : String(err);
-      console.error(`Error executing tool ${request.params.name}: ${errMsg}`);
+      console.error(`Error executing tool ${name}: ${errMsg}`);
       return errorFromCatch(err);
     } finally {
-      await shutdownActualApi();
+      if (needsApi) {
+        await shutdownActualApi();
+      }
     }
   });
 };

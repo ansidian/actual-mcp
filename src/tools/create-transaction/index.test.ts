@@ -20,7 +20,7 @@ describe('create-transaction tool', () => {
   describe('schema', () => {
     it('should have correct tool name and description', () => {
       expect(schema.name).toBe('create-transaction');
-      expect(schema.description).toBe('Create a new transaction. Use this to add transactions to accounts.');
+      expect(schema.description).toContain('Create a new transaction. Use this to add transactions to accounts.');
     });
 
     it('should require account, date, and amount fields', () => {

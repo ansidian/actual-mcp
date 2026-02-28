@@ -16,8 +16,7 @@ const GetGuideArgsSchema = z.object({
     .string()
     .optional()
     .describe(
-      `Guide name to retrieve. Available guides: ${guideNames.join(', ')}. ` +
-        'Omit to list all available guides.'
+      `Guide name to retrieve. Available guides: ${guideNames.join(', ')}. ` + 'Omit to list all available guides.'
     ),
 });
 
@@ -26,11 +25,11 @@ type GetGuideArgs = z.infer<typeof GetGuideArgsSchema>;
 export const schema = {
   name: 'get-guide',
   description:
-    'IMPORTANT: Call this tool BEFORE giving financial advice. ' +
-    'Read "andy-context" at session start to learn how to build the user\'s financial picture. ' +
-    'Read "spending-decisions" before evaluating any purchase or "can I afford" question. ' +
-    'Read "month-ahead" when asked about month-ahead progress. ' +
-    'These guides contain required methodology — do not skip them.',
+    'Retrieve a full guide document by name. Only use AFTER calling query-knowledge first — ' +
+    'query-knowledge is the required entry point for all financial advice and methodology lookups. ' +
+    'Use get-guide only when you need the complete unabridged document after query-knowledge ' +
+    'has already identified which guide is relevant. ' +
+    'Omit the name parameter to list all available guides.',
   inputSchema: zodToJsonSchema(GetGuideArgsSchema) as ToolInput,
 };
 

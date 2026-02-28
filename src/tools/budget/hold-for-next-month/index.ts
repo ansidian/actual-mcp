@@ -19,7 +19,7 @@ const HoldForNextMonthArgsSchema = z.object({
     .describe(
       'The amount in cents to hold for next month. ' +
         'For example, to hold $400 for next month, pass 40000. ' +
-        'This moves money from the current month\'s To Budget into the next month.'
+        "This moves money from the current month's To Budget into the next month."
     ),
 });
 
@@ -28,7 +28,7 @@ type HoldForNextMonthArgs = z.infer<typeof HoldForNextMonthArgsSchema>;
 export const schema = {
   name: 'hold-for-next-month',
   description:
-    'Hold an amount from the current month\'s To Budget for next month. ' +
+    "Hold an amount from the current month's To Budget for next month. " +
     'Used for the month-ahead budgeting strategy — income received this month ' +
     'is held and budgeted next month instead. Amount is in cents.',
   inputSchema: zodToJsonSchema(HoldForNextMonthArgsSchema) as ToolInput,

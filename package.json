@@ -35,6 +35,7 @@
   "dependencies": {
     "@actual-app/api": "^26.2.0",
     "@modelcontextprotocol/sdk": "1.17.4",
+    "@orama/orama": "^3.1.18",
     "dotenv": "17.2.3",
     "express": "5.2.1",
     "zod": "3.25.76",

@@ -23,10 +23,7 @@ const ConditionSchema = z.object({
 
 const UpdateScheduleArgsSchema = z.object({
   id: z.string().describe('The schedule ID to update (UUID format)'),
-  name: z
-    .string()
-    .optional()
-    .describe('New name for the schedule. If omitted, the name is unchanged.'),
+  name: z.string().optional().describe('New name for the schedule. If omitted, the name is unchanged.'),
   conditions: z
     .array(ConditionSchema)
     .optional()

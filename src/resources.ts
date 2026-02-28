@@ -17,7 +17,7 @@ export const GUIDE_RESOURCES = [
   {
     uri: 'actual://guides/month-ahead',
     name: 'Month Ahead Strategy',
-    description: 'Budgeting strategy: live on last month\'s income, hold this month\'s for next month',
+    description: "Budgeting strategy: live on last month's income, hold this month's for next month",
     mimeType: 'text/markdown' as const,
   },
   {
@@ -313,11 +313,12 @@ Having the money available (in the category or via reallocation) doesn't automat
 
 For any purchase over $100, always provide a full impact analysis:
 
-1. Which categories would lose funding and by how much
-2. What each affected category's balance would be after the move
-3. How many months until each affected category is back to its cap/target
-4. Whether this delays month-ahead progress or other goals
-5. Whether spreading the purchase across 2-3 months (budgeting toward it) would be better than buying now
+1. **Discover income pattern first.** Use \`get-transactions\` on the checking/savings account filtered to income categories (e.g., Paycheck) for the last 2-3 months. Determine pay frequency, average paycheck amount, and approximate next pay date. This context is essential — always factor upcoming paychecks into the timeline.
+2. Which categories would lose funding and by how much
+3. What each affected category's balance would be after the move
+4. How many months until each affected category is back to its cap/target (factor in expected paychecks and template runs)
+5. Whether this delays month-ahead progress or other goals
+6. Whether spreading the purchase across 2-3 months (budgeting toward it) would be better than buying now — include a timeline showing how paychecks and template runs would rebuild the funds
 
 ## Quick Reference
 
@@ -326,7 +327,7 @@ For any purchase over $100, always provide a full impact analysis:
 | Category has the money | Spend it — that's what envelopes are for |
 | Category is short, To Budget has funds | Assign from To Budget (note month-ahead tradeoff) |
 | No To Budget, lower-priority categories have surplus | Suggest reallocation with tradeoffs shown |
-| Only higher-priority categories have surplus | Recommend waiting until next paycheck/template run |
+| Only higher-priority categories have surplus | Look up pay frequency via get-transactions, then recommend waiting until next paycheck/template run with a specific date |
 | Purchase would drain multiple categories | Recommend against, or suggest spreading over months |
 | New recurring expense | Needs a template/category change, not just a one-time move |
 `,

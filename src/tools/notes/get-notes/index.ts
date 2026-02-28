@@ -13,10 +13,7 @@ const GetNotesArgsSchema = z.object({
   id: z
     .string()
     .optional()
-    .describe(
-      'Optional entity ID (e.g., category UUID) to get a specific note. ' +
-        'If omitted, returns all notes.'
-    ),
+    .describe('Optional entity ID (e.g., category UUID) to get a specific note. ' + 'If omitted, returns all notes.'),
 });
 
 type GetNotesArgs = z.infer<typeof GetNotesArgsSchema>;
@@ -51,9 +48,7 @@ export async function handler(args: GetNotesArgs): Promise<CallToolResult> {
     }
 
     const notes = await fetchAllNotes();
-    const enriched = notes
-      .filter((n) => n.note)
-      .map((n) => ({ ...n, templates: extractTemplates(n.note) }));
+    const enriched = notes.filter((n) => n.note).map((n) => ({ ...n, templates: extractTemplates(n.note) }));
     return successWithJson(enriched);
   } catch (err) {
     return errorFromCatch(err);

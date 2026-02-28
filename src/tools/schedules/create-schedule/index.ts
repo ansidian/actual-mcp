@@ -27,17 +27,12 @@ const RecurrenceSchema = z.object({
   weekendSolveMode: z.enum(['after', 'before']).optional().default('after'),
   endMode: z.enum(['never', 'after_n_occurrences', 'on_date']).optional().default('never'),
   endOccurrences: z.number().optional().default(1),
-  endDate: z
-    .string()
-    .optional()
-    .describe('End date if endMode is on_date, in YYYY-MM-DD format'),
+  endDate: z.string().optional().describe('End date if endMode is on_date, in YYYY-MM-DD format'),
 });
 
 const CreateScheduleArgsSchema = z.object({
   name: z.string().describe('Name/identifier for the schedule (e.g., "gas", "internet")'),
-  amount: z
-    .number()
-    .describe('Amount in cents, negative for expenses (e.g., -11999 for $119.99 expense)'),
+  amount: z.number().describe('Amount in cents, negative for expenses (e.g., -11999 for $119.99 expense)'),
   amountOp: z
     .enum(['is', 'isapprox'])
     .optional()
