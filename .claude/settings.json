@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__actual-budget__get-accounts",
+      "mcp__actual-budget__create-schedule",
+      "mcp__actual-budget__get-transactions",
+      "mcp__actual-budget__get-payees"
+    ]
+  }
+}

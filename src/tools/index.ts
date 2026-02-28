@@ -38,6 +38,9 @@ import * as deleteSchedule from './schedules/delete-schedule/index.js';
 import * as getNotes from './notes/get-notes/index.js';
 import * as setNote from './notes/set-note/index.js';
 import * as getBudgetMonth from './get-budget-month/index.js';
+import * as setBudgetAmount from './budget/set-budget-amount/index.js';
+import * as holdForNextMonth from './budget/hold-for-next-month/index.js';
+import * as getGuide from './guides/get-guide/index.js';
 
 const readTools = [
   getTransactions,
@@ -51,6 +54,7 @@ const readTools = [
   getSchedules,
   getNotes,
   getBudgetMonth,
+  getGuide,
 ];
 
 const writeTools = [
@@ -74,6 +78,8 @@ const writeTools = [
   updateSchedule,
   deleteSchedule,
   setNote,
+  setBudgetAmount,
+  holdForNextMonth,
 ];
 
 export const setupTools = (server: Server, enableWrite: boolean): void => {
@@ -105,7 +111,13 @@ export const setupTools = (server: Server, enableWrite: boolean): void => {
       // @ts-expect-error: Argument type is handled by Zod schema validation
       return tool.handler(args);
     } catch (err) {
-      console.error(`Error executing tool ${request.params.name}:`, err);
+      const errMsg =
+        err instanceof Error
+          ? err.message
+          : typeof err === 'object' && err !== null
+            ? JSON.stringify(err)
+            : String(err);
+      console.error(`Error executing tool ${request.params.name}: ${errMsg}`);
       return errorFromCatch(err);
     } finally {
       await shutdownActualApi();

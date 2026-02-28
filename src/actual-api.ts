@@ -32,6 +32,7 @@ export async function initActualApi(): Promise<void> {
     return;
   }
 
+  initializing = true;
   try {
     console.error('Initializing Actual Budget API...');
     const dataDir = process.env.ACTUAL_DATA_DIR || DEFAULT_DATA_DIR;
@@ -298,16 +299,24 @@ export async function createScheduleWithConditions(
 }
 
 /**
- * Update a schedule's conditions (amount, date/recurrence).
+ * Update a schedule's name and/or conditions (amount, date/recurrence).
  * api.updateSchedule() throws "Unknown operator: id", so we must
  * use internal.send instead.
  */
-export async function updateScheduleConditions(
+export async function updateSchedule(
   id: string,
-  conditions: Array<{ op: string; field: string; value: unknown }>
+  options: {
+    name?: string;
+    conditions?: Array<{ op: string; field: string; value: unknown }>;
+  }
 ): Promise<void> {
   await initActualApi();
-  await api.internal.send('schedule/update', { schedule: { id }, conditions });
+  const schedule: Record<string, unknown> = { id };
+  if (options.name !== undefined) schedule.name = options.name;
+  await api.internal.send('schedule/update', {
+    schedule,
+    conditions: options.conditions ?? [],
+  });
 }
 
 /**
@@ -353,6 +362,31 @@ export async function setNote(id: string, note: string): Promise<void> {
 export async function getBudgetMonth(month: string): Promise<unknown> {
   await initActualApi();
   return api.getBudgetMonth(month);
+}
+
+/**
+ * Set the budgeted amount for a category in a specific month.
+ * This is the core mechanism for moving money between categories.
+ *
+ * @param month - Month in YYYY-MM format
+ * @param categoryId - Category UUID
+ * @param amount - Amount in cents (the absolute budgeted value, not a delta)
+ */
+export async function setBudgetAmount(month: string, categoryId: string, amount: number): Promise<void> {
+  await initActualApi();
+  await api.setBudgetAmount(month, categoryId, amount);
+}
+
+/**
+ * Hold an amount from To Budget for next month.
+ * Used for the month-ahead budgeting strategy.
+ *
+ * @param month - Current month in YYYY-MM format
+ * @param amount - Amount in cents to hold for next month
+ */
+export async function holdForNextMonth(month: string, amount: number): Promise<void> {
+  await initActualApi();
+  await api.internal.send('api/budget-hold-for-next-month', { month, amount });
 }
 
 // ----------------------------

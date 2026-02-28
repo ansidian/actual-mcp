@@ -344,6 +344,16 @@ server.setRequestHandler(SetLevelRequestSchema, (request) => {
   return {};
 });
 
+process.on('unhandledRejection', (reason) => {
+  const message =
+    reason instanceof Error
+      ? reason.message
+      : typeof reason === 'object' && reason !== null
+        ? JSON.stringify(reason)
+        : String(reason);
+  console.error(`Unhandled rejection: ${message}`);
+});
+
 process.on('SIGINT', () => {
   console.error('SIGINT received, shutting down server');
   server.close();

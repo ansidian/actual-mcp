@@ -10,7 +10,13 @@ import { CreateTransactionArgsSchema, type CreateTransactionArgs, ToolInput } fr
 
 export const schema = {
   name: 'create-transaction',
-  description: 'Create a new transaction. Use this to add transactions to accounts.',
+  description:
+    'Create a new transaction. Use this to add transactions to accounts. ' +
+    'Before creating a transaction from natural language, call get-guide with "andy-context", get-payees, ' +
+    'and get-grouped-categories in parallel to resolve the correct account, category, and payee. ' +
+    'When the user says "payment" to a credit card, this means a transfer from their Savings account. ' +
+    'To create a transfer, set the payee field to the transfer payee ID of the source account, ' +
+    'and the amount should be positive (money coming into the credit card). Do NOT use payee_name for transfers.',
   inputSchema: zodToJsonSchema(CreateTransactionArgsSchema) as ToolInput,
 };
 

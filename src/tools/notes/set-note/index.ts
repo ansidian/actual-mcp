@@ -30,6 +30,8 @@ export const schema = {
   name: 'set-note',
   description:
     'Set/update a note for a category or other entity. Notes store budget template directives. ' +
+    'IMPORTANT: Before writing any #template or #goal directive, call get-guide with name "templates" ' +
+    'to get the complete syntax reference. This ensures you use the correct template type and syntax. ' +
     'WARNING: This replaces the entire note. To preserve existing content, ' +
     'read the note first with get-notes, modify it, then write it back.',
   inputSchema: zodToJsonSchema(SetNoteArgsSchema) as ToolInput,
