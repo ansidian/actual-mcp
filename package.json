@@ -15,7 +15,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
+    "build": "tsc -p tsconfig.build.json && node -e \"const fs=require('fs');fs.cpSync('src/guides','build/guides',{recursive:true});fs.chmodSync('build/index.js','755')\"",
     "watch": "tsc --watch",
     "inspector": "npx @modelcontextprotocol/inspector -e ACTUAL_SERVER_URL=$ACTUAL_SERVER_URL -e ACTUAL_PASSWORD=$ACTUAL_PASSWORD -e ACTUAL_BUDGET_SYNC_ID=$ACTUAL_BUDGET_SYNC_ID node build/index.js",
     "start": "tsx src/index.ts",
@@ -29,11 +29,11 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "type-check": "tsc --noEmit",
-    "quality": "npm run lint && npm run format:check && npm run type-check",
+    "quality": "run-p lint format:check type-check",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@actual-app/api": "^26.2.0",
+    "@actual-app/api": "^26.3.0",
     "@modelcontextprotocol/sdk": "1.17.4",
     "@orama/orama": "^3.1.18",
     "dotenv": "17.2.3",
@@ -51,6 +51,7 @@
     "eslint-plugin-prettier": "5.5.4",
     "globals": "16.5.0",
     "jiti": "2.6.1",
+    "npm-run-all2": "^8.0.4",
     "prettier": "3.7.4",
     "tsx": "4.21.0",
     "typescript": "^5.9.3",

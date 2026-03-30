@@ -25,7 +25,7 @@ import { setupResources } from './resources.js';
 import { setupTools } from './tools/index.js';
 import { SetLevelRequestSchema, isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 
-dotenv.config({ path: '.env' });
+dotenv.config({ path: '.env', quiet: true });
 
 // Initialize the MCP server
 const server = new Server(
@@ -188,6 +188,26 @@ async function main(): Promise<void> {
     }
 
     const streamableHttpTransports = new Map<string, StreamableHTTPServerTransport>();
+    const sessionLastActivity = new Map<string, number>();
+    const SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes
+    const MAX_SESSIONS = 100;
+
+    // Periodically clean up idle sessions
+    const sessionCleanupInterval = setInterval(() => {
+      const now = Date.now();
+      for (const [sessionId, lastActivity] of sessionLastActivity) {
+        if (now - lastActivity > SESSION_TTL_MS) {
+          const transport = streamableHttpTransports.get(sessionId);
+          if (transport) {
+            transport.close?.();
+          }
+          streamableHttpTransports.delete(sessionId);
+          sessionLastActivity.delete(sessionId);
+          console.info(`Session ${sessionId} expired after inactivity`);
+        }
+      }
+    }, 60_000); // Check every minute
+    sessionCleanupInterval.unref(); // Don't prevent process exit
 
     const parseSessionHeader = (value: string | string[] | undefined): string | undefined => {
       if (!value) {
@@ -228,17 +248,37 @@ async function main(): Promise<void> {
       try {
         let streamableTransport = sessionHeader ? streamableHttpTransports.get(sessionHeader) : undefined;
 
+        // Update last-activity timestamp for existing sessions
+        if (streamableTransport && sessionHeader) {
+          sessionLastActivity.set(sessionHeader, Date.now());
+        }
+
         if (!streamableTransport) {
           if (req.method === 'POST' && isInitializeRequest(req.body)) {
+            // Enforce max session limit
+            if (streamableHttpTransports.size >= MAX_SESSIONS) {
+              res.status(503).json({
+                jsonrpc: '2.0',
+                error: {
+                  code: -32000,
+                  message: 'Too many active sessions. Try again later.',
+                },
+                id: null,
+              });
+              return;
+            }
+
             const remoteAddress = req.ip ?? req.socket.remoteAddress ?? 'unknown';
             streamableTransport = new StreamableHTTPServerTransport({
               sessionIdGenerator: () => randomUUID(),
               onsessioninitialized: (sessionId) => {
                 streamableHttpTransports.set(sessionId, streamableTransport!);
+                sessionLastActivity.set(sessionId, Date.now());
                 console.info(`Streamable HTTP session initialized (session ${sessionId}) from ${remoteAddress}`);
               },
               onsessionclosed: (sessionId) => {
                 streamableHttpTransports.delete(sessionId);
+                sessionLastActivity.delete(sessionId);
                 console.info(`Streamable HTTP session closed (session ${sessionId})`);
               },
             });
@@ -247,6 +287,7 @@ async function main(): Promise<void> {
               const activeSessionId = streamableTransport?.sessionId;
               if (activeSessionId) {
                 streamableHttpTransports.delete(activeSessionId);
+                sessionLastActivity.delete(activeSessionId);
                 console.info(`Streamable HTTP transport closed (session ${activeSessionId})`);
               }
             };
@@ -354,14 +395,15 @@ process.on('unhandledRejection', (reason) => {
   console.error(`Unhandled rejection: ${message}`);
 });
 
-process.on('SIGINT', () => {
+process.on('SIGINT', async () => {
   console.error('SIGINT received, shutting down server');
+  await shutdownActualApi();
   server.close();
   process.exit(0);
 });
 
 main()
-  .then(() => {
+  .then(async () => {
     if (!useSse) {
       // TODO: Setup proper logging level change. Messages are available in the notification of MCP Inspector
       console.log = (message: string) =>
@@ -375,6 +417,10 @@ main()
           message,
         });
     }
+
+    // Initialize API after console is redirected so Actual's internal logs
+    // don't corrupt the stdio JSON stream
+    await initActualApi();
   })
   .catch((error: unknown) => {
     console.error(`Server error: ${toErrorMessage(error)}`);

@@ -89,6 +89,22 @@ export async function fetchAllOnBudgetTransactions(
   return _enrichTransactions(transactions);
 }
 
+/**
+ * Fetch transactions for a single account (by ID) or all on-budget accounts.
+ * Encapsulates the common conditional fetch pattern used across multiple tools.
+ */
+export async function fetchTransactionsByScope(
+  accountId: string | undefined,
+  accounts: Account[],
+  start: string,
+  end: string
+): Promise<Transaction[]> {
+  if (accountId) {
+    return fetchTransactionsForAccount(accountId, start, end);
+  }
+  return fetchAllOnBudgetTransactions(accounts, start, end);
+}
+
 export async function fetchAllTransactions(accounts: Account[], start: string, end: string): Promise<Transaction[]> {
   let transactions: Transaction[] = [];
   for (const account of accounts) {

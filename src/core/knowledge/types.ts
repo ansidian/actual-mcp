@@ -22,6 +22,7 @@ export interface SearchResult {
 export interface EmbeddingConfig {
   apiUrl: string;
   model: string;
+  apiKey: string;
 }
 
 export interface GuideResource {

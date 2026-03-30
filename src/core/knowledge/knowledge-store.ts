@@ -8,14 +8,14 @@
 
 import { create, insertMultiple, search } from '@orama/orama';
 import type { Orama, Results } from '@orama/orama';
-import { GUIDE_CONTENT, GUIDE_RESOURCES } from '../../resources.js';
+import { getAllGuideContent, GUIDE_RESOURCES } from '../../resources.js';
 import { chunkGuides } from './chunker.js';
 import { embedTexts, embedQuery } from './embedder.js';
 import type { KnowledgeChunk, SearchResult } from './types.js';
 import type { Transaction, Category, CategoryGroup, Account } from '../types/domain.js';
 import { chunkTransactions } from './transaction-chunker.js';
 
-const VECTOR_SIZE = 768;
+const VECTOR_SIZE = 1536;
 const TRANSACTION_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 interface OramaDoc {
@@ -104,7 +104,7 @@ export async function initKnowledgeStore(): Promise<void> {
   initializing = true;
 
   try {
-    guideChunks = chunkGuides(GUIDE_CONTENT, GUIDE_RESOURCES);
+    guideChunks = chunkGuides(getAllGuideContent(), GUIDE_RESOURCES);
 
     if (guideChunks.length === 0) {
       initialized = true;

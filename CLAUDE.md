@@ -94,3 +94,6 @@ Simple tools (CRUD operations like `create-payee`, `delete-category`) use a sing
 - `ACTUAL_DATA_DIR` — Local data directory (defaults to `~/.actual`)
 - `ACTUAL_BUDGET_ENCRYPTION_PASSWORD` — Separate encryption password if different from server password
 - `BEARER_TOKEN` — Required when `--enable-bearer` is used for SSE/HTTP transport
+- `OPENAI_API_KEY` — API key for OpenAI embeddings (enables vector search in knowledge store; falls back to BM25-only if missing)
+- `EMBEDDING_API_URL` — Override embedding API URL (defaults to `https://api.openai.com/v1`)
+- `EMBEDDING_MODEL` — Override embedding model (defaults to `text-embedding-3-small`)

@@ -9,3 +9,9 @@ data/**
 .gemini/
 
 **/*.local.*
+
+# Personal guide content (loaded at runtime by resources.ts)
+src/guides/
+
+# Claude Code local config
+.claude/

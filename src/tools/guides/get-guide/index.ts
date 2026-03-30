@@ -6,7 +6,8 @@ import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { errorFromCatch } from '../../../utils/response.js';
-import { GUIDE_CONTENT, GUIDE_RESOURCES } from '../../../resources.js';
+import { GUIDE_RESOURCES } from '../../../resources.js';
+import { getGuideContent } from '../../../resources.js';
 import type { ToolInput } from '../../../types.js';
 
 const guideNames = GUIDE_RESOURCES.map((g) => g.uri.replace('actual://guides/', ''));
@@ -49,7 +50,7 @@ export async function handler(args: GetGuideArgs): Promise<CallToolResult> {
     }
 
     const uri = `actual://guides/${v.name}`;
-    const content = GUIDE_CONTENT[uri];
+    const content = getGuideContent(uri);
 
     if (!content) {
       return {

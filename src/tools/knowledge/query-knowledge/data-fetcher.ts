@@ -11,31 +11,9 @@ import { fetchAllAccounts } from '../../../core/data/fetch-accounts.js';
 import { fetchAllCategories, fetchAllCategoryGroups } from '../../../core/data/fetch-categories.js';
 import { fetchAllOnBudgetTransactions } from '../../../core/data/fetch-transactions.js';
 import { refreshTransactionChunks } from '../../../core/knowledge/index.js';
+import { getDateRangeForMonths } from '../../../utils.js';
 
 const MONTHS_OF_HISTORY = 6;
-
-/**
- * Get today's date as YYYY-MM-DD.
- */
-function todayDateString(): string {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-/**
- * Get the date 6 months ago as YYYY-MM-DD.
- */
-function sixMonthsAgoString(): string {
-  const now = new Date();
-  now.setMonth(now.getMonth() - MONTHS_OF_HISTORY);
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
 
 /**
  * Refresh transaction data in the knowledge store.
@@ -49,8 +27,7 @@ export async function refreshTransactionData(): Promise<void> {
     fetchAllCategoryGroups(),
   ]);
 
-  const start = sixMonthsAgoString();
-  const end = todayDateString();
+  const { start, end } = getDateRangeForMonths(MONTHS_OF_HISTORY);
   const transactions = await fetchAllOnBudgetTransactions(accounts, start, end);
 
   await refreshTransactionChunks(transactions, categories, categoryGroups, accounts);

@@ -11,9 +11,8 @@ import {
 import type { Transaction, Category, CategoryGroup, Account } from '../types/domain.js';
 
 // Mock dependencies
-vi.mock('../../resources.js', () => ({
-  GUIDE_CONTENT: {
-    'actual://guides/test-guide': `# Test Guide
+const TEST_GUIDE_CONTENT: Record<string, string> = {
+  'actual://guides/test-guide': `# Test Guide
 
 ## Budgeting Basics
 
@@ -26,7 +25,10 @@ Tips for saving money including emergency funds and sinking funds.
 ## Template Syntax
 
 Use #template directives to automate your budget categories.`,
-  },
+};
+
+vi.mock('../../resources.js', () => ({
+  getAllGuideContent: () => TEST_GUIDE_CONTENT,
   GUIDE_RESOURCES: [
     {
       uri: 'actual://guides/test-guide',
@@ -106,7 +108,7 @@ describe('knowledge-store', () => {
     it('should initialize with vectors when embeddings are available', async () => {
       const mockEmbeddings = Array(3)
         .fill(null)
-        .map(() => new Array(768).fill(0.1));
+        .map(() => new Array(1536).fill(0.1));
       vi.mocked(embedTexts).mockResolvedValue(mockEmbeddings);
 
       await initKnowledgeStore();

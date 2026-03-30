@@ -24,9 +24,10 @@ export async function handler(): Promise<ReturnType<typeof successWithJson> | Re
   try {
     const accounts: Account[] = await fetchAllAccounts();
 
-    for (const account of accounts) {
-      account.balance = await getAccountBalance(account.id);
-    }
+    const balances = await Promise.all(accounts.map((a) => getAccountBalance(a.id)));
+    accounts.forEach((account, i) => {
+      account.balance = balances[i];
+    });
 
     const structured = accounts.map((account) => ({
       id: account.id,

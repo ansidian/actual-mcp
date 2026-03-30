@@ -10,6 +10,7 @@ import { CreateTransactionArgs } from '../../types.js';
 // Mock the actual-api module
 vi.mock('../../actual-api.js', () => ({
   createTransaction: vi.fn(),
+  getPayees: vi.fn(),
 }));
 
 describe('create-transaction tool', () => {
@@ -38,6 +39,7 @@ describe('create-transaction tool', () => {
       expect(properties).toHaveProperty('notes');
       expect(properties).toHaveProperty('cleared');
       expect(properties).toHaveProperty('subtransactions');
+      expect(properties).toHaveProperty('transfer_account_id');
     });
   });
 
@@ -117,6 +119,79 @@ describe('create-transaction tool', () => {
         ],
       });
       expect(result.isError).toBeUndefined();
+    });
+  });
+
+  describe('handler - transfer cases', () => {
+    it('should resolve transfer payee and create transfer transaction', async () => {
+      const mockTransactionId = 'transfer-txn-1';
+      vi.mocked(actualApi.getPayees).mockResolvedValue([
+        { id: 'payee-savings', name: 'Transfer: Savings', transfer_acct: 'savings-account-id' },
+        { id: 'payee-checking', name: 'Transfer: Checking', transfer_acct: 'checking-account-id' },
+      ]);
+      vi.mocked(actualApi.createTransaction).mockResolvedValue(mockTransactionId);
+
+      const args: CreateTransactionArgs = {
+        account: 'checking-account-id',
+        date: '2025-12-18',
+        amount: -5000,
+        transfer_account_id: 'savings-account-id',
+      };
+
+      const result = await handler(args);
+
+      expect(actualApi.getPayees).toHaveBeenCalled();
+      expect(actualApi.createTransaction).toHaveBeenCalledWith('checking-account-id', {
+        date: '2025-12-18',
+        amount: -5000,
+        payee: 'payee-savings',
+      });
+      expect(result.isError).toBeUndefined();
+      expect(result.content[0].text).toContain('transfer');
+    });
+
+    it('should override payee with transfer payee when transfer_account_id is provided', async () => {
+      const mockTransactionId = 'transfer-txn-2';
+      vi.mocked(actualApi.getPayees).mockResolvedValue([
+        { id: 'payee-savings', name: 'Transfer: Savings', transfer_acct: 'savings-account-id' },
+      ]);
+      vi.mocked(actualApi.createTransaction).mockResolvedValue(mockTransactionId);
+
+      const args: CreateTransactionArgs = {
+        account: 'checking-account-id',
+        date: '2025-12-18',
+        amount: -5000,
+        payee: 'some-other-payee',
+        transfer_account_id: 'savings-account-id',
+      };
+
+      const result = await handler(args);
+
+      expect(actualApi.createTransaction).toHaveBeenCalledWith('checking-account-id', {
+        date: '2025-12-18',
+        amount: -5000,
+        payee: 'payee-savings',
+      });
+      expect(result.isError).toBeUndefined();
+    });
+
+    it('should return error when transfer payee is not found', async () => {
+      vi.mocked(actualApi.getPayees).mockResolvedValue([
+        { id: 'payee-checking', name: 'Transfer: Checking', transfer_acct: 'checking-account-id' },
+      ]);
+
+      const args: CreateTransactionArgs = {
+        account: 'checking-account-id',
+        date: '2025-12-18',
+        amount: -5000,
+        transfer_account_id: 'nonexistent-account-id',
+      };
+
+      const result = await handler(args);
+
+      expect(result.isError).toBe(true);
+      expect(result.content[0].text).toContain('No transfer payee found');
+      expect(actualApi.createTransaction).not.toHaveBeenCalled();
     });
   });
 
