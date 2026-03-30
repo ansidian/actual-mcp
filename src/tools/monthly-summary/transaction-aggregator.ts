@@ -14,6 +14,12 @@ export class MonthlySummaryTransactionAggregator {
         // If the transfer moves between on-budget and off-budget accounts, we may handle it differently later.
         return;
       }
+      if (transaction.is_parent) {
+        // # Reason: Split parent transactions hold the total amount but have no category.
+        // Their child subtransactions carry the individual amounts and categories, so counting
+        // the parent would double-count the total.
+        return;
+      }
 
       // Reason: Parse YYYY-MM-DD directly to avoid timezone issues with new Date()
       const [yearStr, monthStr] = transaction.date.split('-');

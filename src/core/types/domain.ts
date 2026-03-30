@@ -14,13 +14,17 @@ export interface Transaction {
   account: string;
   date: string;
   amount: number;
-  payee?: string;
+  payee?: string | null;
   payee_name?: string;
   category?: string;
   category_name?: string;
   notes?: string;
   transfer_id?: string;
   cleared?: boolean;
+  is_parent?: boolean;
+  is_child?: boolean;
+  parent_id?: string;
+  subtransactions?: Transaction[];
 }
 
 export interface Category {

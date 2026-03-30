@@ -33,7 +33,25 @@ export async function handler(args: GetTransactionsArgs): Promise<CallToolResult
     }
     if (categoryName) {
       const lowerCategory = categoryName.toLowerCase();
-      filtered = filtered.filter((t) => (t.category_name || '').toLowerCase().includes(lowerCategory));
+      // For split parents, match if any child subtransaction has the category
+      const childCategories = new Map<string, string[]>();
+      for (const t of filtered) {
+        if (t.is_child && t.parent_id) {
+          const cats = childCategories.get(t.parent_id) || [];
+          cats.push((t.category_name || '').toLowerCase());
+          childCategories.set(t.parent_id, cats);
+        }
+      }
+      filtered = filtered.filter((t) => {
+        if (t.is_parent) {
+          const cats = childCategories.get(t.id) || [];
+          return cats.some((c) => c.includes(lowerCategory));
+        }
+        if (t.is_child) {
+          return (t.category_name || '').toLowerCase().includes(lowerCategory);
+        }
+        return (t.category_name || '').toLowerCase().includes(lowerCategory);
+      });
     }
     if (payeeName) {
       const lowerPayee = payeeName.toLowerCase();
