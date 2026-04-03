@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { refreshTransactionData } from './data-fetcher.js';
+import { refreshTransactionData } from '../../../core/knowledge/refresh-transactions.js';
 
 vi.mock('../../../core/data/fetch-accounts.js', () => ({
   fetchAllAccounts: vi.fn().mockResolvedValue([{ id: 'acct-1', name: 'Checking' }]),
@@ -14,14 +14,14 @@ vi.mock('../../../core/data/fetch-transactions.js', () => ({
   fetchAllOnBudgetTransactions: vi.fn().mockResolvedValue([]),
 }));
 
-vi.mock('../../../core/knowledge/index.js', () => ({
+vi.mock('../../../core/knowledge/knowledge-store.js', () => ({
   refreshTransactionChunks: vi.fn().mockResolvedValue(undefined),
 }));
 
 import { fetchAllAccounts } from '../../../core/data/fetch-accounts.js';
 import { fetchAllCategories, fetchAllCategoryGroups } from '../../../core/data/fetch-categories.js';
 import { fetchAllOnBudgetTransactions } from '../../../core/data/fetch-transactions.js';
-import { refreshTransactionChunks } from '../../../core/knowledge/index.js';
+import { refreshTransactionChunks } from '../../../core/knowledge/knowledge-store.js';
 
 describe('refreshTransactionData', () => {
   beforeEach(() => {

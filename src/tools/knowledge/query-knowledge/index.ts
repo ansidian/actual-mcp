@@ -17,11 +17,13 @@ import { refreshTransactionData } from './data-fetcher.js';
 export const schema = {
   name: 'query-knowledge',
   description:
-    'IMPORTANT: Call this tool BEFORE giving financial advice, evaluating purchases, or answering ' +
-    '"can I afford" questions. This searches the knowledge base using the user\'s natural language query ' +
-    'and returns the most relevant guide sections with the required methodology. ' +
-    'Also call at session start with "financial context" to learn how to build the user\'s financial picture. ' +
-    'After reading the results, use get-guide if you need the full unabridged guide document.',
+    'Search the budgeting knowledge base for decision-making frameworks, category priority rules, ' +
+    'reallocation guidelines, and financial methodology. Returns relevant guide sections that contain ' +
+    'step-by-step procedures for spending decisions (priority hierarchies, "roll with the punches" ' +
+    'reallocation rules, sinking fund safety thresholds), month-ahead budgeting strategy, and template ' +
+    'syntax reference. Also indexes recent transaction patterns for context-aware answers. ' +
+    'Use when advising on purchases, moving money between categories, evaluating affordability, ' +
+    'or any question where budgeting methodology matters — not just raw numbers.',
   inputSchema: zodToJsonSchema(QueryKnowledgeArgsSchema) as ToolInput,
   requiresApi: true,
 };

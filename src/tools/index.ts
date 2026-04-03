@@ -6,6 +6,7 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { syncBudget, waitForApi } from '../actual-api.js';
 import { error, errorFromCatch } from '../utils/response.js';
+import { ensureKnowledgeReady, injectKnowledge } from './knowledge-injection.js';
 
 import * as balanceHistory from './balance-history/index.js';
 import * as getGroupedCategories from './categories/get-grouped-categories/index.js';
@@ -112,7 +113,9 @@ export const setupTools = (server: Server, enableWrite: boolean): void => {
     try {
       await waitForApi();
       await syncBudget();
-      return await tool.handler(args);
+      await ensureKnowledgeReady();
+      const result = await tool.handler(args);
+      return await injectKnowledge(name, result);
     } catch (err) {
       const errMsg =
         err instanceof Error

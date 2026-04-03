@@ -17,6 +17,8 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import dotenv from 'dotenv';
 import express, { NextFunction, Request, Response } from 'express';
 import { randomUUID } from 'node:crypto';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { initActualApi, shutdownActualApi } from './actual-api.js';
 import { fetchAllAccounts } from './core/data/fetch-accounts.js';
@@ -25,7 +27,8 @@ import { setupResources } from './resources.js';
 import { setupTools } from './tools/index.js';
 import { SetLevelRequestSchema, isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 
-dotenv.config({ path: '.env', quiet: true });
+const __dirname = dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: resolve(__dirname, '..', '.env') });
 
 // Initialize the MCP server
 const server = new Server(
